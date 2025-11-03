@@ -2,6 +2,7 @@ import streamlit as st
 import random
 import pandas as pd
 import os
+import numpy as np
 
 # --- Default Vocabulary Bank ---
 vocab = {
@@ -154,6 +155,7 @@ if st.button("🔁 New Quiz"):
     st.session_state.answers = [""] * st.session_state.num_questions
     st.session_state.quiz_words = generate_quiz(st.session_state.num_questions)
     st.rerun()
+
 
 
 
