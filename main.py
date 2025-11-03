@@ -62,37 +62,39 @@ for w in vocab.keys():
 
 # --- Weighted Random Quiz Generator ---
 def generate_quiz(n):
-    # Ensure the log matches the current vocab set
+    # Filter log to current vocab only
     log_filtered = log_df[log_df["word"].isin(vocab.keys())].copy()
-
-    # Assign weights based on wrong answers (default 1 if unseen)
     log_filtered["weight"] = log_filtered["wrong"] + 1
     weights = log_filtered["weight"] / log_filtered["weight"].sum()
-
-    # Map the weights in order of vocab.keys()
     vocab_items = list(vocab.items())
     word_order = list(vocab.keys())
-    weight_list = [weights.iloc[word_order.index(w)] if w in word_order else 1 for w, _ in vocab_items]
-
-    # Now both vocab and weights have same length
+    weight_list = [weights.iloc[word_order.index(w)] for w, _ in vocab_items]
     selected_words = random.choices(vocab_items, weights=weight_list, k=n)
-
     # Prevent duplicates if possible
     unique_selected = list(dict(selected_words).items())
     return unique_selected[:n]
 
 # --- Streamlit UI ---
-st.title("🗣️ Malay Vocabulary Quiz")
-st.write("Test your Malay ↔ English vocabulary")
+st.title("🗣️ Malay Vocabulary Tester (Adaptive Mode)")
+st.write("Test your Malay ↔ English vocabulary — wrong answers appear more often!")
 
 mode = st.sidebar.selectbox("Test direction:", ["English → Malay", "Malay → English"])
 num_questions = st.sidebar.slider("Number of words to test:", 3, 50, 20)  # default 20
 
-# --- Initialize Quiz ---
-if "quiz_words" not in st.session_state:
+# --- Generate Quiz ---
+if "num_questions" not in st.session_state:
+    st.session_state.num_questions = num_questions
     st.session_state.quiz_words = generate_quiz(num_questions)
+
+# Regenerate quiz if slider value changes
+if num_questions != st.session_state.num_questions:
+    st.session_state.num_questions = num_questions
+    st.session_state.quiz_words = generate_quiz(num_questions)
+    st.session_state.answers = [""] * st.session_state.num_questions
+
+# --- Initialize answers ---
 if "answers" not in st.session_state:
-    st.session_state.answers = {}  # stores current text inputs
+    st.session_state.answers = [""] * len(st.session_state.quiz_words)
 
 score = 0
 wrong_list = []
@@ -101,11 +103,12 @@ st.header("📝 Quiz Section")
 
 for i, (malay, english) in enumerate(st.session_state.quiz_words):
     key = f"q{i}"
-    default_value = st.session_state.answers.get(key, "")
-    
+    default_value = st.session_state.answers[i]
+
     if mode == "Malay → English":
-        user_answer = st.text_input(f"{i+1}. What is the English meaning of **{malay}**?", value=default_value, key=key)
-        st.session_state.answers[key] = user_answer
+        user_answer = st.text_input(f"{i+1}. What is the English meaning of **{malay}**?",
+                                    value=default_value, key=key)
+        st.session_state.answers[i] = user_answer
         if user_answer:
             if user_answer.strip().lower() == english.lower():
                 st.success("✅ Correct!")
@@ -115,10 +118,10 @@ for i, (malay, english) in enumerate(st.session_state.quiz_words):
                 st.error(f"❌ Wrong. Correct answer: **{english}**")
                 log_df.loc[log_df["word"] == malay, "wrong"] += 1
                 wrong_list.append(malay)
-
-    else:  # English → Malay
-        user_answer = st.text_input(f"{i+1}. What is the Malay word for **{english}**?", value=default_value, key=key)
-        st.session_state.answers[key] = user_answer
+    else:
+        user_answer = st.text_input(f"{i+1}. What is the Malay word for **{english}**?",
+                                    value=default_value, key=key)
+        st.session_state.answers[i] = user_answer
         if user_answer:
             if user_answer.strip().lower() == malay.lower():
                 st.success("✅ Correct!")
@@ -141,8 +144,9 @@ if wrong_list:
 
 # --- Restart Quiz Button ---
 if st.button("🔁 New Quiz"):
-    st.session_state.quiz_words = generate_quiz(num_questions)
-    st.session_state.answers = {}  # clear all previous answers
+    st.session_state.answers = [""] * st.session_state.num_questions
+    st.session_state.quiz_words = generate_quiz(st.session_state.num_questions)
     st.rerun()
+
 
 
