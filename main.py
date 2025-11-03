@@ -101,4 +101,5 @@ for i, (malay, english) in enumerate(st.session_state.quiz_words):
 st.write("---")
 if st.button("🔁 New Quiz"):
     st.session_state.quiz_words = random.sample(list(vocab.items()), num_questions)
-    st.experimental_rerun()
+    st.rerun()
+
