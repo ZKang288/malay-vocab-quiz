@@ -23,7 +23,7 @@ vocab = {
     "terlupa": "forgot", "terlalu": "too", "tetap": "still", "tertidur": "fell asleep",
     "terbesar": "very big", "tertinggal": "left behind", "terkejut": "surprised",
     "tertua": "very old", "terlanggar": "hit accidentally", "tercapai": "achievable",
-    "tertindah": "most beautiful",
+    "terindah": "most beautiful",
 
     # others
     "makanan": "food", "tulisan": "writing (noun)", "pakaian": "clothing", "tuliskan": "please write",
@@ -71,7 +71,7 @@ def generate_quiz(n):
     return unique_selected[:n]
 
 # --- Streamlit UI ---
-st.title("🗣️ Malay Vocabulary Quiz)")
+st.title("🗣️ Malay Vocabulary Quiz")
 st.write("Test your Malay ↔ English vocabulary")
 
 mode = st.sidebar.selectbox("Test direction:", ["English → Malay", "Malay → English"])
@@ -93,7 +93,7 @@ for i, (malay, english) in enumerate(st.session_state.quiz_words):
     default_value = st.session_state.answers.get(key, "")
     
     if mode == "Malay → English":
-        user_answer = st.text_input(f"What is the English meaning of **{malay}**?", value=default_value, key=key)
+        user_answer = st.text_input(f"{i+1}. What is the English meaning of **{malay}**?", value=default_value, key=key)
         st.session_state.answers[key] = user_answer
         if user_answer:
             if user_answer.strip().lower() == english.lower():
@@ -106,7 +106,7 @@ for i, (malay, english) in enumerate(st.session_state.quiz_words):
                 wrong_list.append(malay)
 
     else:  # English → Malay
-        user_answer = st.text_input(f"What is the Malay word for **{english}**?", value=default_value, key=key)
+        user_answer = st.text_input(f"{i+1}. What is the Malay word for **{english}**?", value=default_value, key=key)
         st.session_state.answers[key] = user_answer
         if user_answer:
             if user_answer.strip().lower() == malay.lower():
@@ -133,4 +133,3 @@ if st.button("🔁 New Quiz"):
     st.session_state.quiz_words = generate_quiz(num_questions)
     st.session_state.answers = {}  # clear all previous answers
     st.experimental_rerun()
-
