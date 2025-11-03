@@ -50,13 +50,18 @@ vocab = {
     "jauhi": "stay away from"
 }
 
+# --- Categorise words ---
+meN_words = {k: v for k, v in vocab.items() if k.startswith("me")}
+peN_words = {k: v for k, v in vocab.items() if k.startswith("pe")}
+other_words = {k: v for k, v in vocab.items() if k not in meN_words and k not in peN_words}
+
 # --- Streamlit Interface ---
 st.title("🗣️ Malay Vocabulary Tester")
 st.write("Test your Malay ↔ English vocabulary knowledge!")
 
 # --- Sidebar Options ---
 mode = st.sidebar.selectbox("Test direction:", ["English → Malay", "Malay → English"])
-num_questions = st.sidebar.slider("Number of words to test:", 3, 20, 5)
+num_questions = st.sidebar.slider("Number of words to test:", 3, 50, 5)
 
 # --- Add New Words ---
 st.sidebar.subheader("➕ Add New Word")
@@ -70,14 +75,33 @@ if st.sidebar.button("Add to Vocab Bank"):
     else:
         st.sidebar.warning("Please fill both Malay and English fields.")
 
+# --- Function to pick balanced random quiz ---
+def generate_quiz(n):
+    # Decide how many meN- / peN- / others to take
+    if n < 10:
+        n_meN = int(n * 0.4)
+        n_peN = int(n * 0.2)
+    elif n < 30:
+        n_meN = int(n * 0.45)
+        n_peN = int(n * 0.25)
+    else:
+        n_meN = int(n * 0.5)
+        n_peN = int(n * 0.25)
+    n_other = n - n_meN - n_peN
+
+    selected_meN = random.sample(list(meN_words.items()), min(n_meN, len(meN_words)))
+    selected_peN = random.sample(list(peN_words.items()), min(n_peN, len(peN_words)))
+    selected_other = random.sample(list(other_words.items()), min(n_other, len(other_words)))
+
+    combined = selected_meN + selected_peN + selected_other
+    random.shuffle(combined)
+    return combined
+
 # --- Use session_state to keep quiz fixed ---
 if "quiz_words" not in st.session_state:
-    st.session_state.quiz_words = random.sample(list(vocab.items()), num_questions)
-    st.session_state.score = 0
+    st.session_state.quiz_words = generate_quiz(num_questions)
 
 st.header("📝 Quiz Section")
-
-score = 0
 
 for i, (malay, english) in enumerate(st.session_state.quiz_words):
     key = f"q{i}"
@@ -97,9 +121,8 @@ for i, (malay, english) in enumerate(st.session_state.quiz_words):
             else:
                 st.error(f"❌ Wrong. Correct answer: **{malay}**")
 
-# --- Button to restart quiz ---
+# --- Restart quiz button ---
 st.write("---")
 if st.button("🔁 New Quiz"):
-    st.session_state.quiz_words = random.sample(list(vocab.items()), num_questions)
+    st.session_state.quiz_words = generate_quiz(num_questions)
     st.rerun()
-
