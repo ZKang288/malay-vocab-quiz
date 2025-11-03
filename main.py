@@ -3,6 +3,7 @@ import random
 
 # --- Default Vocabulary Bank ---
 vocab = {
+    # meN- verbs
     "melihat": "see",
     "memasak": "cook",
     "menyanyi": "sing",
@@ -26,6 +27,8 @@ vocab = {
     "mengikal": "tie",
     "menggosok": "rub",
     "mengira": "to count",
+
+    # peN- nouns
     "pembaca": "reader",
     "pemfitnah": "slanderer",
     "pemotong": "cutter",
@@ -39,6 +42,21 @@ vocab = {
     "penyukat": "measurer",
     "pengecat": "painter",
     "pengelap": "wiper",
+
+    # ter- words
+    "terlupa": "forgot",
+    "terlalu": "too",
+    "tetap": "still",
+    "tertidur": "fell asleep",
+    "terbesar": "very big",
+    "tertinggal": "left behind",
+    "terkejut": "surprised",
+    "tertua": "very old",
+    "terlanggar": "hit accidentally",
+    "tercapai": "achievable",
+    "tertindah": "most beautiful",
+
+    # others
     "makanan": "food",
     "tulisan": "writing",
     "pakaian": "clothing",
@@ -47,13 +65,43 @@ vocab = {
     "bukakan": "open for someone",
     "sayangi": "love/cherish",
     "dekati": "approach",
-    "jauhi": "stay away from"
+    "jauhi": "stay away from",
+
+    # simpulan bahasa
+    "anak emas": "favourite person",
+    "buah tangan": "souvenir, gift from a trip",
+    "mulut murai": "talkative person",
+    "kaki bangku": "bad at sports",
+    "hidung tinggi": "arrogant",
+    "berat tulang": "lazy",
+    "otak udang": "slow-witted",
+    "kaki ayam": "barefoot, not wearing shoes",
+    "tangan panjang": "likes to steal",
+    "telinga kuali": "stubborn, does not listen",
+    "ulat buku": "bookworm",
+    "besar hati": "happy or proud",
+    "buah hati": "beloved, someone you love deeply",
+    "kaki botol": "alcoholic",
+    "makan angin": "to go on a trip or vacation",
+    "ringan tulang": "hardworking",
+    "besar kepala": "arrogant or overconfident",
+    "cakar ayam": "messy handwriting",
+    "pakwe": "boyfriend",
+    "makwe": "girlfriend"
 }
 
 # --- Categorise words ---
 meN_words = {k: v for k, v in vocab.items() if k.startswith("me")}
 peN_words = {k: v for k, v in vocab.items() if k.startswith("pe")}
-other_words = {k: v for k, v in vocab.items() if k not in meN_words and k not in peN_words}
+ter_words = {k: v for k, v in vocab.items() if k.startswith("ter")}
+simpulan_words = {
+    k: v for k, v in vocab.items()
+    if " " in k and k not in meN_words and k not in peN_words and k not in ter_words
+}
+other_words = {
+    k: v for k, v in vocab.items()
+    if k not in meN_words and k not in peN_words and k not in ter_words and k not in simpulan_words
+}
 
 # --- Streamlit Interface ---
 st.title("🗣️ Malay Vocabulary Tester")
@@ -75,25 +123,29 @@ if st.sidebar.button("Add to Vocab Bank"):
     else:
         st.sidebar.warning("Please fill both Malay and English fields.")
 
-# --- Function to pick balanced random quiz ---
+# --- Balanced Random Selection Function ---
 def generate_quiz(n):
-    # Decide how many meN- / peN- / others to take
-    if n < 10:
+    # Adjust proportions based on quiz size
+    if n < 20:
         n_meN = int(n * 0.4)
         n_peN = int(n * 0.2)
-    elif n < 30:
-        n_meN = int(n * 0.45)
-        n_peN = int(n * 0.25)
+        n_ter = int(n * 0.1)
+        n_simpulan = int(n * 0.1)
     else:
-        n_meN = int(n * 0.5)
-        n_peN = int(n * 0.25)
-    n_other = n - n_meN - n_peN
+        n_meN = int(n * 0.35)
+        n_peN = int(n * 0.2)
+        n_ter = int(n * 0.1)
+        n_simpulan = int(n * 0.2)
+    n_other = n - (n_meN + n_peN + n_ter + n_simpulan)
 
+    # Randomly sample from each category
     selected_meN = random.sample(list(meN_words.items()), min(n_meN, len(meN_words)))
     selected_peN = random.sample(list(peN_words.items()), min(n_peN, len(peN_words)))
+    selected_ter = random.sample(list(ter_words.items()), min(n_ter, len(ter_words)))
+    selected_simpulan = random.sample(list(simpulan_words.items()), min(n_simpulan, len(simpulan_words)))
     selected_other = random.sample(list(other_words.items()), min(n_other, len(other_words)))
 
-    combined = selected_meN + selected_peN + selected_other
+    combined = selected_meN + selected_peN + selected_ter + selected_simpulan + selected_other
     random.shuffle(combined)
     return combined
 
@@ -103,6 +155,7 @@ if "quiz_words" not in st.session_state:
 
 st.header("📝 Quiz Section")
 
+# --- Display Questions ---
 for i, (malay, english) in enumerate(st.session_state.quiz_words):
     key = f"q{i}"
     if mode == "Malay → English":
@@ -121,7 +174,7 @@ for i, (malay, english) in enumerate(st.session_state.quiz_words):
             else:
                 st.error(f"❌ Wrong. Correct answer: **{malay}**")
 
-# --- Restart quiz button ---
+# --- Restart Quiz Button ---
 st.write("---")
 if st.button("🔁 New Quiz"):
     st.session_state.quiz_words = generate_quiz(num_questions)
