@@ -62,10 +62,21 @@ for w in vocab.keys():
 
 # --- Weighted Random Quiz Generator ---
 def generate_quiz(n):
-    # Weight more heavily the words with more wrong answers
-    log_df["weight"] = log_df["wrong"] + 1  # +1 to ensure unseen words aren't ignored
-    weights = log_df["weight"] / log_df["weight"].sum()
-    selected_words = random.choices(list(vocab.items()), weights=weights, k=n)
+    # Ensure the log matches the current vocab set
+    log_filtered = log_df[log_df["word"].isin(vocab.keys())].copy()
+
+    # Assign weights based on wrong answers (default 1 if unseen)
+    log_filtered["weight"] = log_filtered["wrong"] + 1
+    weights = log_filtered["weight"] / log_filtered["weight"].sum()
+
+    # Map the weights in order of vocab.keys()
+    vocab_items = list(vocab.items())
+    word_order = list(vocab.keys())
+    weight_list = [weights.iloc[word_order.index(w)] if w in word_order else 1 for w, _ in vocab_items]
+
+    # Now both vocab and weights have same length
+    selected_words = random.choices(vocab_items, weights=weight_list, k=n)
+
     # Prevent duplicates if possible
     unique_selected = list(dict(selected_words).items())
     return unique_selected[:n]
@@ -133,3 +144,4 @@ if st.button("🔁 New Quiz"):
     st.session_state.quiz_words = generate_quiz(num_questions)
     st.session_state.answers = {}  # clear all previous answers
     st.experimental_rerun()
+
