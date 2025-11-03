@@ -70,31 +70,35 @@ if st.sidebar.button("Add to Vocab Bank"):
     else:
         st.sidebar.warning("Please fill both Malay and English fields.")
 
-# --- Quiz Logic ---
-quiz_words = random.sample(list(vocab.items()), num_questions)
-score = 0
+# --- Use session_state to keep quiz fixed ---
+if "quiz_words" not in st.session_state:
+    st.session_state.quiz_words = random.sample(list(vocab.items()), num_questions)
+    st.session_state.score = 0
 
 st.header("📝 Quiz Section")
 
-for malay, english in quiz_words:
+score = 0
+
+for i, (malay, english) in enumerate(st.session_state.quiz_words):
+    key = f"q{i}"
     if mode == "Malay → English":
-        user_answer = st.text_input(f"What is the English meaning of **{malay}**?", key=malay)
+        user_answer = st.text_input(f"What is the English meaning of **{malay}**?", key=key)
         if user_answer:
             if user_answer.strip().lower() == english.lower():
                 st.success("✅ Correct!")
-                score += 1
             else:
                 st.error(f"❌ Wrong. Correct answer: **{english}**")
 
     else:  # English → Malay
-        user_answer = st.text_input(f"What is the Malay word for **{english}**?", key=english)
+        user_answer = st.text_input(f"What is the Malay word for **{english}**?", key=key)
         if user_answer:
             if user_answer.strip().lower() == malay.lower():
                 st.success("✅ Correct!")
-                score += 1
             else:
                 st.error(f"❌ Wrong. Correct answer: **{malay}**")
 
-# --- Score Display ---
+# --- Button to restart quiz ---
 st.write("---")
-st.subheader(f"Your score: {score} / {num_questions}")
+if st.button("🔁 New Quiz"):
+    st.session_state.quiz_words = random.sample(list(vocab.items()), num_questions)
+    st.experimental_rerun()
