@@ -62,21 +62,24 @@ for w in vocab.keys():
 
 # --- Weighted Random Quiz Generator ---
 def generate_quiz(n):
-    # Filter log to current vocab only
     log_filtered = log_df[log_df["word"].isin(vocab.keys())].copy()
     log_filtered["weight"] = log_filtered["wrong"] + 1
     weights = log_filtered["weight"] / log_filtered["weight"].sum()
+
     vocab_items = list(vocab.items())
     word_order = list(vocab.keys())
-    weight_list = [weights.iloc[word_order.index(w)] for w, _ in vocab_items]
-    selected_words = random.choices(vocab_items, weights=weight_list, k=n)
-    # Prevent duplicates if possible
-    unique_selected = list(dict(selected_words).items())
-    return unique_selected[:n]
+    weight_list = np.array([weights.iloc[word_order.index(w)] for w, _ in vocab_items])
+
+    # Sample without replacement using probabilities
+    n = min(n, len(vocab_items))  # cannot sample more than available
+    selected_indices = np.random.choice(len(vocab_items), size=n, replace=False, p=weight_list)
+    selected_words = [vocab_items[i] for i in selected_indices]
+
+    return selected_words
 
 # --- Streamlit UI ---
-st.title("🗣️ Malay Vocabulary Tester (Adaptive Mode)")
-st.write("Test your Malay ↔ English vocabulary — wrong answers appear more often!")
+st.title("🗣️ Malay Vocabulary Quiz")
+st.write("Test your Malay ↔ English vocabulary")
 
 mode = st.sidebar.selectbox("Test direction:", ["English → Malay", "Malay → English"])
 num_questions = st.sidebar.slider("Number of words to test:", 3, 50, 20)  # default 20
@@ -147,6 +150,7 @@ if st.button("🔁 New Quiz"):
     st.session_state.answers = [""] * st.session_state.num_questions
     st.session_state.quiz_words = generate_quiz(st.session_state.num_questions)
     st.rerun()
+
 
 
 
