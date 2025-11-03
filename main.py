@@ -6,11 +6,11 @@ import os
 # --- Default Vocabulary Bank ---
 vocab = {
     # meN- verbs
-    "melihat": "see", "memasak": "cook", "menyanyi": "sing", "merasa": "feel", "mewarna": "color",
-    "meyakinkan": "convince", "membeli": "buy", "menfoto": "photograph", "memvakum": "vacuum",
-    "memohon": "apply", "mencuci": "wash", "mendapat": "get", "menjawab": "answer",
-    "menulis": "write", "menziarah": "visit", "menyapu": "sweep", "menyepak": "kick",
-    "mengecat": "paint", "mengelap": "wipe", "mengambil": "take", "mengikal": "tie",
+    "melihat": "see (verb)", "memasak": "cook", "menyanyi": "sing", "merasa": "feel", "mewarna": "to color (verb)",
+    "meyakinkan": "convince", "membeli": "buy", "menfoto": "to photograph", "memvakum": "to vacuum",
+    "memohon": "to apply", "mencuci": "to wash", "mendapat": "get", "menjawab": "answer",
+    "menulis": "write", "menziarah": "to visit", "menyapu": "sweep", "menyepak": "kick",
+    "mengecat": "to paint", "mengelap": "wipe", "mengambil": "take", "mengikal": "to tie",
     "menggosok": "rub", "mengira": "to count",
 
     # peN- nouns
@@ -26,7 +26,7 @@ vocab = {
     "tertindah": "most beautiful",
 
     # others
-    "makanan": "food", "tulisan": "writing", "pakaian": "clothing", "tuliskan": "please write",
+    "makanan": "food", "tulisan": "writing (noun)", "pakaian": "clothing", "tuliskan": "please write",
     "hantarkan": "send/deliver", "bukakan": "open for someone", "sayangi": "love/cherish",
     "dekati": "approach", "jauhi": "stay away from",
 
@@ -71,8 +71,8 @@ def generate_quiz(n):
     return unique_selected[:n]
 
 # --- Streamlit UI ---
-st.title("🗣️ Malay Vocabulary Tester (Adaptive Mode)")
-st.write("Test your Malay ↔ English vocabulary — wrong answers appear more often!")
+st.title("🗣️ Malay Vocabulary Quiz)")
+st.write("Test your Malay ↔ English vocabulary")
 
 mode = st.sidebar.selectbox("Test direction:", ["English → Malay", "Malay → English"])
 num_questions = st.sidebar.slider("Number of words to test:", 3, 50, 20)  # default 20
@@ -133,3 +133,4 @@ if st.button("🔁 New Quiz"):
     st.session_state.quiz_words = generate_quiz(num_questions)
     st.session_state.answers = {}  # clear all previous answers
     st.experimental_rerun()
+
