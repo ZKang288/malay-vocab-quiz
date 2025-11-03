@@ -62,16 +62,20 @@ for w in vocab.keys():
 
 # --- Weighted Random Quiz Generator ---
 def generate_quiz(n):
+    # Filter log to current vocab only
     log_filtered = log_df[log_df["word"].isin(vocab.keys())].copy()
     log_filtered["weight"] = log_filtered["wrong"] + 1
-    weights = log_filtered["weight"] / log_filtered["weight"].sum()
 
+    # Map weights to words
+    weight_dict = dict(zip(log_filtered["word"], log_filtered["weight"]))
     vocab_items = list(vocab.items())
-    word_order = list(vocab.keys())
-    weight_list = np.array([weights.iloc[word_order.index(w)] for w, _ in vocab_items])
 
-    # Sample without replacement using probabilities
-    n = min(n, len(vocab_items))  # cannot sample more than available
+    # Use weight from dict; default to 1 if missing
+    weight_list = np.array([weight_dict.get(w, 1) for w, _ in vocab_items], dtype=float)
+    weight_list /= weight_list.sum()  # normalize
+
+    # Sample without replacement
+    n = min(n, len(vocab_items))
     selected_indices = np.random.choice(len(vocab_items), size=n, replace=False, p=weight_list)
     selected_words = [vocab_items[i] for i in selected_indices]
 
@@ -150,6 +154,7 @@ if st.button("🔁 New Quiz"):
     st.session_state.answers = [""] * st.session_state.num_questions
     st.session_state.quiz_words = generate_quiz(st.session_state.num_questions)
     st.rerun()
+
 
 
 
