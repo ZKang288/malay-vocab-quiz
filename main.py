@@ -143,5 +143,6 @@ if wrong_list:
 if st.button("🔁 New Quiz"):
     st.session_state.quiz_words = generate_quiz(num_questions)
     st.session_state.answers = {}  # clear all previous answers
-    st.experimental_rerun()
+    st.rerun()
+
 
