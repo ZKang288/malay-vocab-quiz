@@ -38,7 +38,7 @@ vocab = {
     "telinga kuali": "stubborn", "ulat buku": "bookworm", "besar hati": "happy or proud",
     "buah hati": "beloved", "kaki botol": "alcoholic", "makan angin": "to go on a trip",
     "ringan tulang": "hardworking", "besar kepala": "arrogant", "cakar ayam": "messy handwriting",
-    "pakwe": "boyfriend", "makwe": "girlfriend"
+    "pakwe": "boyfriend", "makwe": "girlfriend",
 
     # penanda wacana
     "mula-mula": "at first", "pertama": "firstly",
@@ -170,6 +170,7 @@ if st.button("🔁 New Quiz"):
     st.session_state.answers = [""] * st.session_state.num_questions
     st.session_state.quiz_words = generate_quiz(st.session_state.num_questions)
     st.rerun()
+
 
 
 
