@@ -84,44 +84,53 @@ for w in vocab.keys():
         log_df = pd.concat([log_df, pd.DataFrame([{"word": w, "correct": 0, "wrong": 0}])], ignore_index=True)
 
 # --- Helper: Weighted Sampling from One Category ---
-def weighted_sample(cat_dict, n):
-    log_filtered = log_df[log_df["word"].isin(cat_dict.keys())].copy()
-    if log_filtered.empty:
-        return []
+def weighted_sample(word_dict, n):
+    """Select up to n items from a category, weighted by wrong answers."""
+    log_filtered = log_df[log_df["word"].isin(word_dict.keys())].copy()
     log_filtered["weight"] = log_filtered["wrong"] + 1
     weight_dict = dict(zip(log_filtered["word"], log_filtered["weight"]))
-    vocab_items = list(cat_dict.items())
+
+    vocab_items = list(word_dict.items())
     weights = np.array([weight_dict.get(w, 1) for w, _ in vocab_items], dtype=float)
     weights /= weights.sum()
+
     n = min(n, len(vocab_items))
     indices = np.random.choice(len(vocab_items), size=n, replace=False, p=weights)
     return [vocab_items[i] for i in indices]
 
 # --- Fixed Proportion Generator ---
 def generate_quiz(n, selected_cats):
-    # Fixed proportions
-    simpulan_ratio = 0.2
-    penanda_ratio = 0.2
-    remaining_ratio = 1 - (simpulan_ratio + penanda_ratio)
-    
-    simpulan_n = int(n * simpulan_ratio)
-    penanda_n = int(n * penanda_ratio)
-    remaining_n = n - simpulan_n - penanda_n
-    
-    selected_vocab = {cat: categories[cat] for cat in selected_cats}
-    other_cats = [c for c in selected_cats if c not in ["simpulan bahasa", "penanda wacana"]]
-    
+    """
+    Generate a quiz with n questions from selected categories.
+    Distributes equally among selected categories, and fully from one if only one selected.
+    Uses adaptive weighting based on wrong counts in vocab_log.csv.
+    """
+
+    selected_cats = [c for c in selected_cats if c in categories]
+
+    # --- Handle single category case ---
+    if len(selected_cats) == 1:
+        cat_dict = categories[selected_cats[0]]
+        return weighted_sample(cat_dict, n)
+
+    # --- Multiple categories: equal proportion ---
+    per_cat = max(1, n // len(selected_cats))
     quiz = []
-    if "simpulan bahasa" in selected_cats:
-        quiz += weighted_sample(simpulan_words, simpulan_n)
-    if "penanda wacana" in selected_cats:
-        quiz += weighted_sample(penanda_words, penanda_n)
-    
-    if other_cats and remaining_n > 0:
-        per_cat = max(1, remaining_n // len(other_cats))
-        for cat in other_cats:
-            quiz += weighted_sample(categories[cat], per_cat)
-    
+
+    for cat in selected_cats:
+        cat_dict = categories[cat]
+        cat_sample = weighted_sample(cat_dict, per_cat)
+        quiz.extend(cat_sample)
+
+    # If fewer than n due to small categories, top up randomly from selected ones
+    if len(quiz) < n:
+        remaining = n - len(quiz)
+        pool = []
+        for cat in selected_cats:
+            pool.extend(list(categories[cat].items()))
+        extra = random.sample(pool, min(remaining, len(pool)))
+        quiz.extend(extra)
+
     random.shuffle(quiz)
     return quiz[:n]
 
@@ -191,6 +200,7 @@ if st.button("🔁 New Quiz"):
     st.session_state.quiz_words = generate_quiz(num_questions, selected_cats)
     st.session_state.answers = [""] * num_questions
     st.rerun()
+
 
 
 
