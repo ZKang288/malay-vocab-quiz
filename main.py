@@ -63,113 +63,135 @@ other_words = {k: v for k, v in vocab.items()
                if k not in meN_words and k not in peN_words and k not in ter_words
                and k not in simpulan_words and k not in penanda_words}
 
-# --- Load / Initialize Log ---
-LOG_FILE = "vocab_log.csv"
+categories = {
+    "meN- verbs": meN_words,
+    "peN- nouns": peN_words,
+    "ter- words": ter_words,
+    "simpulan bahasa": simpulan_words,
+    "others": other_words,
+    "penanda wacana": penanda_words
+}
 
+# --- Progress Log ---
+LOG_FILE = "vocab_log.csv"
 if os.path.exists(LOG_FILE):
     log_df = pd.read_csv(LOG_FILE)
 else:
     log_df = pd.DataFrame({"word": list(vocab.keys()), "correct": 0, "wrong": 0})
 
-# Ensure all vocab words are tracked
 for w in vocab.keys():
     if w not in log_df["word"].values:
         log_df = pd.concat([log_df, pd.DataFrame([{"word": w, "correct": 0, "wrong": 0}])], ignore_index=True)
 
-# --- Weighted Random Quiz Generator ---
-def generate_quiz(n):
-    # Filter log to current vocab only
-    log_filtered = log_df[log_df["word"].isin(vocab.keys())].copy()
+# --- Helper: Weighted Sampling from One Category ---
+def weighted_sample(cat_dict, n):
+    log_filtered = log_df[log_df["word"].isin(cat_dict.keys())].copy()
+    if log_filtered.empty:
+        return []
     log_filtered["weight"] = log_filtered["wrong"] + 1
-
-    # Map weights to words
     weight_dict = dict(zip(log_filtered["word"], log_filtered["weight"]))
-    vocab_items = list(vocab.items())
-
-    # Use weight from dict; default to 1 if missing
-    weight_list = np.array([weight_dict.get(w, 1) for w, _ in vocab_items], dtype=float)
-    weight_list /= weight_list.sum()  # normalize
-
-    # Sample without replacement
+    vocab_items = list(cat_dict.items())
+    weights = np.array([weight_dict.get(w, 1) for w, _ in vocab_items], dtype=float)
+    weights /= weights.sum()
     n = min(n, len(vocab_items))
-    selected_indices = np.random.choice(len(vocab_items), size=n, replace=False, p=weight_list)
-    selected_words = [vocab_items[i] for i in selected_indices]
+    indices = np.random.choice(len(vocab_items), size=n, replace=False, p=weights)
+    return [vocab_items[i] for i in indices]
 
-    return selected_words
+# --- Fixed Proportion Generator ---
+def generate_quiz(n, selected_cats):
+    # Fixed proportions
+    simpulan_ratio = 0.1
+    penanda_ratio = 0.1
+    remaining_ratio = 1 - (simpulan_ratio + penanda_ratio)
+    
+    simpulan_n = int(n * simpulan_ratio)
+    penanda_n = int(n * penanda_ratio)
+    remaining_n = n - simpulan_n - penanda_n
+    
+    selected_vocab = {cat: categories[cat] for cat in selected_cats}
+    other_cats = [c for c in selected_cats if c not in ["simpulan bahasa", "penanda wacana"]]
+    
+    quiz = []
+    if "simpulan bahasa" in selected_cats:
+        quiz += weighted_sample(simpulan_words, simpulan_n)
+    if "penanda wacana" in selected_cats:
+        quiz += weighted_sample(penanda_words, penanda_n)
+    
+    if other_cats and remaining_n > 0:
+        per_cat = max(1, remaining_n // len(other_cats))
+        for cat in other_cats:
+            quiz += weighted_sample(categories[cat], per_cat)
+    
+    random.shuffle(quiz)
+    return quiz[:n]
 
-# --- Streamlit UI ---
-st.title("🗣️ Malay Vocabulary Quiz")
-st.write("Test your Malay ↔ English vocabulary")
+# --- Streamlit App ---
+st.title("🗣️ Malay Vocabulary Tester")
+st.sidebar.header("Settings")
 
 mode = st.sidebar.selectbox("Test direction:", ["English → Malay", "Malay → English"])
-num_questions = st.sidebar.slider("Number of words to test:", 3, 50, 20)  # default 20
+num_questions = st.sidebar.slider("Number of words:", 3, 50, 20)
+selected_cats = st.sidebar.multiselect("Categories to include:", list(categories.keys()), default=list(categories.keys()))
 
-# --- Generate Quiz ---
-if "num_questions" not in st.session_state:
+# --- Generate or Refresh Quiz ---
+if "quiz_words" not in st.session_state:
+    st.session_state.quiz_words = generate_quiz(num_questions, selected_cats)
+    st.session_state.answers = [""] * num_questions
     st.session_state.num_questions = num_questions
-    st.session_state.quiz_words = generate_quiz(num_questions)
+    st.session_state.last_cats = selected_cats
 
-# Regenerate quiz if slider value changes
-if num_questions != st.session_state.num_questions:
+if num_questions != st.session_state.num_questions or st.session_state.last_cats != selected_cats:
+    st.session_state.quiz_words = generate_quiz(num_questions, selected_cats)
+    st.session_state.answers = [""] * num_questions
     st.session_state.num_questions = num_questions
-    st.session_state.quiz_words = generate_quiz(num_questions)
-    st.session_state.answers = [""] * st.session_state.num_questions
-
-# --- Initialize answers ---
-if "answers" not in st.session_state:
-    st.session_state.answers = [""] * len(st.session_state.quiz_words)
+    st.session_state.last_cats = selected_cats
 
 score = 0
 wrong_list = []
 
-st.header("📝 Quiz Section")
+st.header("📝 Quiz")
 
 for i, (malay, english) in enumerate(st.session_state.quiz_words):
     key = f"q{i}"
-    default_value = st.session_state.answers[i]
-
     if mode == "Malay → English":
-        user_answer = st.text_input(f"{i+1}. What is the English meaning of **{malay}**?",
-                                    value=default_value, key=key)
-        st.session_state.answers[i] = user_answer
+        user_answer = st.text_input(f"{i+1}. Meaning of **{malay}**:", value=st.session_state.answers[i], key=key)
         if user_answer:
+            st.session_state.answers[i] = user_answer
             if user_answer.strip().lower() == english.lower():
                 st.success("✅ Correct!")
                 log_df.loc[log_df["word"] == malay, "correct"] += 1
                 score += 1
             else:
-                st.error(f"❌ Wrong. Correct answer: **{english}**")
+                st.error(f"❌ Correct: **{english}**")
                 log_df.loc[log_df["word"] == malay, "wrong"] += 1
                 wrong_list.append(malay)
     else:
-        user_answer = st.text_input(f"{i+1}. What is the Malay word for **{english}**?",
-                                    value=default_value, key=key)
-        st.session_state.answers[i] = user_answer
+        user_answer = st.text_input(f"{i+1}. Malay for **{english}**:", value=st.session_state.answers[i], key=key)
         if user_answer:
+            st.session_state.answers[i] = user_answer
             if user_answer.strip().lower() == malay.lower():
                 st.success("✅ Correct!")
                 log_df.loc[log_df["word"] == malay, "correct"] += 1
                 score += 1
             else:
-                st.error(f"❌ Wrong. Correct answer: **{malay}**")
+                st.error(f"❌ Correct: **{malay}**")
                 log_df.loc[log_df["word"] == malay, "wrong"] += 1
                 wrong_list.append(malay)
 
-# --- Save Progress ---
+# Save log
 log_df.to_csv(LOG_FILE, index=False)
 
-# --- Summary ---
 st.write("---")
 st.subheader(f"✅ Score: {score}/{num_questions}")
 if wrong_list:
     st.write("Words to review:")
     st.write(", ".join(wrong_list))
 
-# --- Restart Quiz Button ---
 if st.button("🔁 New Quiz"):
-    st.session_state.answers = [""] * st.session_state.num_questions
-    st.session_state.quiz_words = generate_quiz(st.session_state.num_questions)
+    st.session_state.quiz_words = generate_quiz(num_questions, selected_cats)
+    st.session_state.answers = [""] * num_questions
     st.rerun()
+
 
 
 
