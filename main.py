@@ -8,8 +8,8 @@ import numpy as np
 vocab = {
     # meN- verbs
     "melihat": "see (verb)", "memasak": "cook", "menyanyi": "sing", "merasa": "feel", "mewarna": "to color (verb)",
-    "meyakinkan": "convince", "membeli": "buy", "menfoto": "to photograph", "memvakum": "to vacuum",
-    "memohon": "to apply", "mencuci": "to wash", "mendapat": "get", "menjawab": "answer",
+    "memvakum": "to vacuum", "meyakinkan": "convince", "membeli": "buy", "memfoto": "to photograph", 
+    "menjawab": "answer", "memohon": "to apply", "mencuci": "to wash", "mendapat": "get", 
     "menulis": "write", "menziarah": "to visit", "menyapu": "sweep", "menyepak": "kick",
     "mengecat": "to paint", "mengelap": "wipe", "mengambil": "take", "mengikal": "to tie",
     "menggosok": "rub", "mengira": "to count",
@@ -39,6 +39,15 @@ vocab = {
     "buah hati": "beloved", "kaki botol": "alcoholic", "makan angin": "to go on a trip",
     "ringan tulang": "hardworking", "besar kepala": "arrogant", "cakar ayam": "messy handwriting",
     "pakwe": "boyfriend", "makwe": "girlfriend"
+
+    # penanda wacana
+    "mula-mula": "at first", "pertama": "firstly",
+    "selain itu": "besides that", "tambahan pula": "moreover",
+    "kemudian": "then", "selepas itu": "after that",
+    "walau bagaimanapun": "however",
+    "oleh itu": "therefore",
+    "contohnya": "for example", "misalnya": "for example",
+    "akhirnya": "finally", "akhir sekali": "lastly", "kesimpulannya": "in conclusion"
 }
 
 # --- Categorise words ---
@@ -46,7 +55,13 @@ meN_words = {k: v for k, v in vocab.items() if k.startswith("me")}
 peN_words = {k: v for k, v in vocab.items() if k.startswith("pe")}
 ter_words = {k: v for k, v in vocab.items() if k.startswith("ter")}
 simpulan_words = {k: v for k, v in vocab.items() if " " in k and k not in meN_words and k not in peN_words and k not in ter_words}
-other_words = {k: v for k, v in vocab.items() if k not in meN_words and k not in peN_words and k not in ter_words and k not in simpulan_words}
+penanda_words = {k: v for k, v in vocab.items() if k in [
+    "mula-mula", "pertama", "selain itu", "tambahan pula", "kemudian", "selepas itu",
+    "walau bagaimanapun", "oleh itu", "contohnya", "misalnya", "akhirnya", "akhir sekali", "kesimpulannya"
+]}
+other_words = {k: v for k, v in vocab.items()
+               if k not in meN_words and k not in peN_words and k not in ter_words
+               and k not in simpulan_words and k not in penanda_words}
 
 # --- Load / Initialize Log ---
 LOG_FILE = "vocab_log.csv"
@@ -155,6 +170,7 @@ if st.button("🔁 New Quiz"):
     st.session_state.answers = [""] * st.session_state.num_questions
     st.session_state.quiz_words = generate_quiz(st.session_state.num_questions)
     st.rerun()
+
 
 
 
