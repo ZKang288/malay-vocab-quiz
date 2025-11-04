@@ -100,8 +100,8 @@ def weighted_sample(cat_dict, n):
 # --- Fixed Proportion Generator ---
 def generate_quiz(n, selected_cats):
     # Fixed proportions
-    simpulan_ratio = 0.1
-    penanda_ratio = 0.1
+    simpulan_ratio = 0.2
+    penanda_ratio = 0.2
     remaining_ratio = 1 - (simpulan_ratio + penanda_ratio)
     
     simpulan_n = int(n * simpulan_ratio)
@@ -191,6 +191,7 @@ if st.button("🔁 New Quiz"):
     st.session_state.quiz_words = generate_quiz(num_questions, selected_cats)
     st.session_state.answers = [""] * num_questions
     st.rerun()
+
 
 
 
