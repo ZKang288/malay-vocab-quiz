@@ -126,7 +126,7 @@ peN_an_nouns = {
 ter_words = {
     "terlupa": "forgot", "terlalu": "too", "tetap": "still", "tertidur": "fell asleep",
     "terbesar": "very big", "tertinggal": "left behind", "terkejut": "surprised",
-    "tertua": "very old", "terlanggar": "hit accidentally", "tercapai": "achievable", "tertindah": "most beautiful"
+    "tertua": "very old", "terlanggar": "hit accidentally", "tercapai": "achievable", "terindah": "most beautiful"
 }
 
 others = {
