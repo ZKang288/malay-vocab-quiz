@@ -81,7 +81,7 @@ meN_kan_verbs = {
     "mencantikkan": "beautify",
     "membaikan": "to improve",
     "mendekatkan": "bring closer",
-    "memasukan": "insert",
+    "memasukkan": "insert",
     "mendudukan": "place",
     "menaikkan": "increase",
     "membelikan": "buy for someone",
@@ -281,4 +281,5 @@ st.sidebar.write(f"Total words in database: {sum(len(cat) for cat in categories.
 st.sidebar.write(f"Selected categories: {len(selected_categories)}")
 st.sidebar.write(f"Questions in current quiz: {len(st.session_state.quiz_words)}")
 st.sidebar.write(f"Test direction: {test_direction}")
+
 
