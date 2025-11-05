@@ -19,18 +19,29 @@ else:
 # ------------------------------
 # 🔹 Define categories
 # ------------------------------
+# meN- verbs "melihat": "see", "memasak": "cook", "menyanyi": "sing", "merasa": "feel", "mewarna": "color", "meyakinkan": "convince", "membeli": "buy", "menfoto": "photograph", "memvakum": "vacuum", "memohon": "apply", "mencuci": "wash", "mendapat": "get", "menjawab": "answer", "menulis": "write", "menziarah": "visit", "menyapu": "sweep", "menyepak": "kick", "mengecat": "paint", "mengelap": "wipe", "mengambil": "take", "mengikal": "tie", "menggosok": "rub", "mengira": "to count", # peN- nouns "pembaca": "reader", "pemfitnah": "slanderer", "pemotong": "cutter", "pencuri": "thief", "pendaki": "climber", "penari": "dancer", "pengguna": "user", "pengkaji": "researcher", "penganalisis": "analyst", "penyapu": "broom", "penyukat": "measurer", "pengecat": "painter", "pengelap": "wiper", # ter- words "terlupa": "forgot", "terlalu": "too", "tetap": "still", "tertidur": "fell asleep", "terbesar": "very big", "tertinggal": "left behind", "terkejut": "surprised", "tertua": "very old", "terlanggar": "hit accidentally", "tercapai": "achievable", "tertindah": "most beautiful", # others "makanan": "food", "tulisan": "writing", "pakaian": "clothing", "tuliskan": "please write", "hantarkan": "send/deliver", "bukakan": "open for someone", "sayangi": "love/cherish", "dekati": "approach", "jauhi": "stay away from",
+
 simpulan_bahasa = {
-    "buah fikiran": "idea",
-    "kaki bangku": "bad at sports",
-    "hidung tinggi": "arrogant",
-    "tangan kosong": "empty-handed",
-    "mulut manis": "flattering",
-    "naik darah": "angry",
-    "telinga nipis": "sensitive to criticism",
-    "makan angin": "go on holiday",
-    "besar hati": "grateful / proud",
-    "ambil hati": "to please someone",
-    "berat mulut": "not talkative",
+    "anak emas": "favourite person", 
+    "buah tangan": "souvenir", 
+    "mulut murai": "talkative person", 
+    "kaki bangku": "bad at sports", 
+    "hidung tinggi": "arrogant", 
+    "berat tulang": "lazy", 
+    "otak udang": "slow-witted", 
+    "kaki ayam": "barefoot", 
+    "tangan panjang": "likes to steal", 
+    "telinga kuali": "stubborn", 
+    "ulat buku": "bookworm", 
+    "besar hati": "happy or proud", 
+    "buah hati": "beloved", 
+    "kaki botol": "alcoholic", 
+    "makan angin": "to go on a trip", 
+    "ringan tulang": "hardworking", 
+    "besar kepala": "arrogant", 
+    "cakar ayam": "messy handwriting", 
+    "pakwe": "boyfriend", 
+    "makwe": "girlfriend"
 }
 
 penanda_wacana = {
@@ -47,6 +58,15 @@ penanda_wacana = {
     "akhirnya": "finally",
     "akhir sekali": "lastly",
     "kesimpulannya": "in conclusion",
+}
+
+meN_verbs = {
+    "melihat": "see", "memasak": "cook", "menyanyi": "sing", "merasa": "feel",
+    "mewarna": "color", "meyakinkan": "convince", "membeli": "buy", "menfoto": "photograph",
+    "memvakum": "vacuum", "memohon": "apply", "mencuci": "wash", "mendapat": "get",
+    "menjawab": "answer", "menulis": "write", "menziarah": "visit", "menyapu": "sweep",
+    "menyepak": "kick", "mengecat": "paint", "mengelap": "wipe", "mengambil": "take",
+    "mengikal": "tie", "menggosok": "rub", "mengira": "to count"
 }
 
 men_kan_verbs = {
@@ -82,6 +102,12 @@ men_i_verbs = {
     "menduduki": "occupy",
 }
 
+pen_nouns = {
+    "pembaca": "reader", "pemfitnah": "slanderer", "pemotong": "cutter", "pencuri": "thief",
+    "pendaki": "climber", "penari": "dancer", "pengguna": "user", "pengkaji": "researcher",
+    "penganalisis": "analyst", "penyapu": "broom", "penyukat": "measurer", "pengecat": "painter", "pengelap": "wiper"
+}
+
 pen_an_nouns = {
     "pemakanan": "diet",
     "pembacaan": "reading",
@@ -99,118 +125,89 @@ pen_an_nouns = {
     "kesakitan": "pain",
 }
 
+ter_words = {
+    "terlupa": "forgot", "terlalu": "too", "tetap": "still", "tertidur": "fell asleep",
+    "terbesar": "very big", "tertinggal": "left behind", "terkejut": "surprised",
+    "tertua": "very old", "terlanggar": "hit accidentally", "tercapai": "achievable", "tertindah": "most beautiful"
+}
+
+others = {
+    "makanan": "food", "tulisan": "writing", "pakaian": "clothing", "tuliskan": "please write",
+    "hantarkan": "send/deliver", "bukakan": "open for someone", "sayangi": "love/cherish",
+    "dekati": "approach", "jauhi": "stay away from"
+}
+
 categories = {
-    "simpulan bahasa": simpulan_bahasa,
-    "penanda wacana": penanda_wacana,
-    "meN-kan verbs": men_kan_verbs,
+    "Penanda Wacana": penanda_wacana,
+    "meN- verbs": meN_verbs,
+    "meN-kan verbs": meN_kan_verbs,
     "men-i verbs": men_i_verbs,
-    "peN-an / ke-an nouns": pen_an_nouns,
+    "peN-/ke-an nouns": pen_kean_nouns,
+    "peN- nouns": pen_nouns,
+    "ter- words": ter_words,
+    "Others": others
 }
 
 
-# ------------------------------
-# 🔹 Weighted sampling helper
-# ------------------------------
-def weighted_sample(word_dict, n):
-    """Select up to n items from a category, weighted by wrong answers."""
-    log_filtered = log_df[log_df["word"].isin(word_dict.keys())].copy()
-    log_filtered["weight"] = log_filtered["wrong"] + 1
-    weight_dict = dict(zip(log_filtered["word"], log_filtered["weight"]))
+# Select categories
+selected_categories = st.multiselect(
+    "Select categories to be tested:", list(categories.keys()), default=list(categories.keys())
+)
 
-    vocab_items = list(word_dict.items())
-    weights = np.array([weight_dict.get(w, 1) for w, _ in vocab_items], dtype=float)
-    weights /= weights.sum()
+# Number of questions
+num_questions = st.slider("Number of questions:", 5, 50, 20)
 
-    n = min(n, len(vocab_items))
-    indices = np.random.choice(len(vocab_items), size=n, replace=False, p=weights)
-    return [vocab_items[i] for i in indices]
-
-
-# ------------------------------
-# 🔹 Generate quiz logic
-# ------------------------------
-def generate_quiz(n, selected_cats):
-    """Generate quiz with n questions distributed equally among selected categories."""
-    selected_cats = [c for c in selected_cats if c in categories]
-    if not selected_cats:
+# ---------------------
+# GENERATE QUIZ FUNCTION
+# ---------------------
+def generate_quiz(num_questions):
+    selected_dicts = [categories[c] for c in selected_categories if c in categories]
+    if not selected_dicts:
         return []
 
-    # Single category → take all from that
-    if len(selected_cats) == 1:
-        return weighted_sample(categories[selected_cats[0]], n)
+    # Even distribution
+    per_cat = num_questions // len(selected_dicts)
+    remainder = num_questions % len(selected_dicts)
+    quiz_items = []
 
-    # Multi-category → equal distribution
-    per_cat = max(1, n // len(selected_cats))
-    quiz = []
-
-    for cat in selected_cats:
-        cat_dict = categories[cat]
-        quiz.extend(weighted_sample(cat_dict, per_cat))
-
-    # Fill remainder if not enough
-    if len(quiz) < n:
-        remaining = n - len(quiz)
-        pool = []
-        for cat in selected_cats:
-            pool.extend(list(categories[cat].items()))
-        extra = random.sample(pool, min(remaining, len(pool)))
-        quiz.extend(extra)
-
-    random.shuffle(quiz)
-    return quiz[:n]
-
-
-# ------------------------------
-# 🔹 Streamlit UI
-# ------------------------------
-st.title("🗣️ Malay Vocabulary Quiz")
-
-st.sidebar.header("Quiz Settings")
-selected_cats = st.sidebar.multiselect("Select categories", list(categories.keys()), default=["simpulan bahasa"])
-num_questions = st.sidebar.slider("Number of questions", 5, 30, 20)
-
-if "quiz_words" not in st.session_state or st.sidebar.button("Restart Quiz"):
-    st.session_state.quiz_words = generate_quiz(num_questions, selected_cats)
-    st.session_state.user_answers = [""] * len(st.session_state.quiz_words)
-    st.session_state.show_results = False
-
-quiz_words = st.session_state.quiz_words
-
-# ------------------------------
-# 🔹 Quiz display
-# ------------------------------
-st.write("### Translate the following Malay words:")
-
-for i, (malay, english) in enumerate(quiz_words):
-    st.session_state.user_answers[i] = st.text_input(f"{i+1}. {malay}", st.session_state.user_answers[i])
-
-if st.button("Submit Answers"):
-    correct = 0
-    for (malay, english), ans in zip(quiz_words, st.session_state.user_answers):
-        ans_clean = ans.strip().lower()
-        correct_ans = english.lower()
-
-        if ans_clean == correct_ans:
-            correct += 1
-            if malay in log_df["word"].values:
-                log_df.loc[log_df["word"] == malay, "correct"] += 1
-            else:
-                log_df.loc[len(log_df)] = [malay, 1, 0]
+    for i, cat_dict in enumerate(selected_dicts):
+        n = per_cat + (1 if i < remainder else 0)
+        items = list(cat_dict.items())
+        if len(items) <= n:
+            quiz_items.extend(items)
         else:
-            if malay in log_df["word"].values:
-                log_df.loc[log_df["word"] == malay, "wrong"] += 1
-            else:
-                log_df.loc[len(log_df)] = [malay, 0, 1]
+            quiz_items.extend(random.sample(items, n))
+    random.shuffle(quiz_items)
+    return quiz_items[:num_questions]
 
-    log_df.to_csv(LOG_FILE, index=False)
-    st.session_state.show_results = True
-    st.session_state.score = f"{correct}/{len(quiz_words)}"
 
-# ------------------------------
-# 🔹 Show results
-# ------------------------------
-if st.session_state.get("show_results", False):
-    st.success(f"Your score: {st.session_state.score}")
-    with st.expander("Show correct answers"):
-        for (malay, english), ans in zip(quiz_words, st.session_state.user_answers):
-            st.write(f"**{malay}** — your answer: *{ans}* → correct: **{english}**")
+# ---------------------
+# SESSION STATE
+# ---------------------
+if "quiz_words" not in st.session_state:
+    st.session_state.quiz_words = generate_quiz(num_questions)
+if "answers" not in st.session_state:
+    st.session_state.answers = [""] * len(st.session_state.quiz_words)
+
+# Restart Quiz
+if st.button("🔁 Restart Quiz"):
+    st.session_state.quiz_words = generate_quiz(num_questions)
+    st.session_state.answers = [""] * len(st.session_state.quiz_words)
+    st.rerun()
+
+# ---------------------
+# QUIZ DISPLAY
+# ---------------------
+score = 0
+for i, (malay, english) in enumerate(st.session_state.quiz_words):
+    ans = st.text_input(f"{i+1}. {malay}", st.session_state.answers[i])
+    st.session_state.answers[i] = ans
+    if ans.strip().lower() == english.lower():
+        score += 1
+
+# ---------------------
+# RESULTS
+# ---------------------
+if st.button("✅ Submit"):
+    st.success(f"You scored {score} out of {len(st.session_state.quiz_words)}!")
+
