@@ -15,11 +15,9 @@ else:
     log_df = pd.DataFrame(columns=["word", "correct", "wrong"])
     log_df.to_csv(LOG_FILE, index=False)
 
-
 # ------------------------------
 # 🔹 Define categories
 # ------------------------------
-# meN- verbs "melihat": "see", "memasak": "cook", "menyanyi": "sing", "merasa": "feel", "mewarna": "color", "meyakinkan": "convince", "membeli": "buy", "menfoto": "photograph", "memvakum": "vacuum", "memohon": "apply", "mencuci": "wash", "mendapat": "get", "menjawab": "answer", "menulis": "write", "menziarah": "visit", "menyapu": "sweep", "menyepak": "kick", "mengecat": "paint", "mengelap": "wipe", "mengambil": "take", "mengikal": "tie", "menggosok": "rub", "mengira": "to count", # peN- nouns "pembaca": "reader", "pemfitnah": "slanderer", "pemotong": "cutter", "pencuri": "thief", "pendaki": "climber", "penari": "dancer", "pengguna": "user", "pengkaji": "researcher", "penganalisis": "analyst", "penyapu": "broom", "penyukat": "measurer", "pengecat": "painter", "pengelap": "wiper", # ter- words "terlupa": "forgot", "terlalu": "too", "tetap": "still", "tertidur": "fell asleep", "terbesar": "very big", "tertinggal": "left behind", "terkejut": "surprised", "tertua": "very old", "terlanggar": "hit accidentally", "tercapai": "achievable", "tertindah": "most beautiful", # others "makanan": "food", "tulisan": "writing", "pakaian": "clothing", "tuliskan": "please write", "hantarkan": "send/deliver", "bukakan": "open for someone", "sayangi": "love/cherish", "dekati": "approach", "jauhi": "stay away from",
 
 simpulan_bahasa = {
     "anak emas": "favourite person", 
@@ -87,7 +85,7 @@ meN_kan_verbs = {
     "mendudukan": "place",
     "menaikkan": "increase",
     "membelikan": "buy for someone",
-    "menyeronkkan": "enjoy/have fun",
+    "menyeronokkan": "enjoy/have fun",  # Fixed typo from "menyeronkkan"
 }
 
 meN_i_verbs = {
@@ -113,8 +111,8 @@ peN_an_nouns = {
     "pembacaan": "reading",
     "pengunaan": "usage",
     "pemandangan": "view/scenery",
-    "pengelaman": "experience",
-    "penuliskan": "writing",
+    "pengalaman": "experience",  # Fixed typo from "pengelaman"
+    "penulisan": "writing",  # Fixed typo from "penuliskan"
     "perjalanan": "journey",
     "pekerjaan": "occupation",
     "persoalan": "question",
@@ -138,20 +136,28 @@ others = {
 }
 
 categories = {
+    "Simpulan Bahasa": simpulan_bahasa,
     "Penanda Wacana": penanda_wacana,
     "meN- verbs": meN_verbs,
     "meN-kan verbs": meN_kan_verbs,
-    "meN-i verbs": men_i_verbs,
-    "peN-/ke-an nouns": pen_kean_nouns,
-    "peN- nouns": pen_nouns,
+    "meN-i verbs": meN_i_verbs,  # Fixed variable name
+    "peN- nouns": peN_nouns,
+    "peN-an/ke-an nouns": peN_an_nouns,  # Fixed variable name
     "ter- words": ter_words,
     "Others": others
 }
 
+# ---------------------
+# STREAMLIT UI
+# ---------------------
+st.title("🗣️ Malay Vocabulary Quiz")
+st.write("Test your Malay vocabulary knowledge")
 
 # Select categories
 selected_categories = st.multiselect(
-    "Select categories to be tested:", list(categories.keys()), default=list(categories.keys())
+    "Select categories to be tested:", 
+    list(categories.keys()), 
+    default=list(categories.keys())
 )
 
 # Number of questions
@@ -180,7 +186,6 @@ def generate_quiz(num_questions):
     random.shuffle(quiz_items)
     return quiz_items[:num_questions]
 
-
 # ---------------------
 # SESSION STATE
 # ---------------------
@@ -198,17 +203,46 @@ if st.button("🔁 Restart Quiz"):
 # ---------------------
 # QUIZ DISPLAY
 # ---------------------
+st.header("📝 Quiz Section")
 score = 0
+wrong_answers = []
+
 for i, (malay, english) in enumerate(st.session_state.quiz_words):
-    ans = st.text_input(f"{i+1}. {malay}", st.session_state.answers[i])
-    st.session_state.answers[i] = ans
-    if ans.strip().lower() == english.lower():
-        score += 1
+    # Use a unique key for each text input
+    user_answer = st.text_input(
+        f"{i+1}. What is the English meaning of **{malay}**?", 
+        value=st.session_state.answers[i],
+        key=f"q_{i}"  # Unique key for each question
+    )
+    st.session_state.answers[i] = user_answer
+    
+    # Check answer if user has provided one
+    if user_answer.strip():
+        if user_answer.strip().lower() == english.lower():
+            st.success("✅ Correct!")
+            score += 1
+        else:
+            st.error(f"❌ Wrong! The correct answer is: **{english}**")
+            wrong_answers.append((malay, english, user_answer))
 
 # ---------------------
 # RESULTS
 # ---------------------
-if st.button("✅ Submit"):
-    st.success(f"You scored {score} out of {len(st.session_state.quiz_words)}!")
+st.write("---")
+st.subheader("📊 Results")
 
+if st.button("✅ Submit Quiz"):
+    st.success(f"You scored **{score}** out of **{len(st.session_state.quiz_words)}**!")
+    
+    if wrong_answers:
+        st.subheader("📝 Words to review:")
+        for malay, english, user_ans in wrong_answers:
+            st.write(f"- **{malay}**: Your answer: '{user_ans}' | Correct: **{english}**")
 
+# ---------------------
+# PROGRESS TRACKING (Optional enhancement)
+# ---------------------
+st.sidebar.header("Progress Tracking")
+st.sidebar.write(f"Total words in database: {sum(len(cat) for cat in categories.values())}")
+st.sidebar.write(f"Selected categories: {len(selected_categories)}")
+st.sidebar.write(f"Questions in current quiz: {len(st.session_state.quiz_words)}")
