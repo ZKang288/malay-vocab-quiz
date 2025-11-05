@@ -1,89 +1,116 @@
 import streamlit as st
-import random
 import pandas as pd
-import os
 import numpy as np
+import random
+import os
 
-# --- Default Vocabulary Bank ---
-vocab = {
-    # meN- verbs
-    "melihat": "see (verb)", "memasak": "cook", "menyanyi": "sing", "merasa": "feel", "mewarna": "to color (verb)",
-    "memvakum": "to vacuum", "meyakinkan": "convince", "membeli": "buy", "memfoto": "to photograph", 
-    "menjawab": "answer", "memohon": "to apply", "mencuci": "to wash", "mendapat": "get", 
-    "menulis": "write", "menziarah": "to visit", "menyapu": "sweep", "menyepak": "kick",
-    "mengecat": "to paint", "mengelap": "wipe", "mengambil": "take", "mengikal": "to tie",
-    "menggosok": "rub", "mengira": "to count",
-
-    # peN- nouns
-    "pembaca": "reader", "pemfitnah": "slanderer", "pemotong": "cutter", "pencuri": "thief",
-    "pendaki": "climber", "penari": "dancer", "pengguna": "user", "pengkaji": "researcher",
-    "penganalisis": "analyst", "penyapu": "broom", "penyukat": "measurer", "pengecat": "painter",
-    "pengelap": "wiper",
-
-    # ter- words
-    "terlupa": "forgot", "terlalu": "too", "tetap": "still", "tertidur": "fell asleep",
-    "terbesar": "very big", "tertinggal": "left behind", "terkejut": "surprised",
-    "tertua": "very old", "terlanggar": "hit accidentally", "tercapai": "achievable",
-    "terindah": "most beautiful",
-
-    # others
-    "makanan": "food", "tulisan": "writing (noun)", "pakaian": "clothing", "tuliskan": "please write",
-    "hantarkan": "send/deliver", "bukakan": "open for someone", "sayangi": "love/cherish",
-    "dekati": "approach", "jauhi": "stay away from",
-
-    # simpulan bahasa
-    "anak emas": "favourite person", "buah tangan": "souvenir", "mulut murai": "talkative person",
-    "kaki bangku": "bad at sports", "hidung tinggi": "arrogant", "berat tulang": "lazy",
-    "otak udang": "slow-witted", "kaki ayam": "barefoot", "tangan panjang": "likes to steal",
-    "telinga kuali": "stubborn", "ulat buku": "bookworm", "besar hati": "happy or proud",
-    "buah hati": "beloved", "kaki botol": "alcoholic", "makan angin": "to go on a trip",
-    "ringan tulang": "hardworking", "besar kepala": "arrogant", "cakar ayam": "messy handwriting",
-    "pakwe": "boyfriend", "makwe": "girlfriend",
-
-    # penanda wacana
-    "mula-mula": "at first", "pertama": "firstly",
-    "selain itu": "besides that", "tambahan pula": "moreover",
-    "kemudian": "then", "selepas itu": "after that",
-    "walau bagaimanapun": "however",
-    "oleh itu": "therefore",
-    "contohnya": "for example", "misalnya": "for example",
-    "akhirnya": "finally", "akhir sekali": "lastly", "kesimpulannya": "in conclusion"
-}
-
-# --- Categorise words ---
-meN_words = {k: v for k, v in vocab.items() if k.startswith("me")}
-peN_words = {k: v for k, v in vocab.items() if k.startswith("pe")}
-ter_words = {k: v for k, v in vocab.items() if k.startswith("ter")}
-simpulan_words = {k: v for k, v in vocab.items() if " " in k and k not in meN_words and k not in peN_words and k not in ter_words}
-penanda_words = {k: v for k, v in vocab.items() if k in [
-    "mula-mula", "pertama", "selain itu", "tambahan pula", "kemudian", "selepas itu",
-    "walau bagaimanapun", "oleh itu", "contohnya", "misalnya", "akhirnya", "akhir sekali", "kesimpulannya"
-]}
-other_words = {k: v for k, v in vocab.items()
-               if k not in meN_words and k not in peN_words and k not in ter_words
-               and k not in simpulan_words and k not in penanda_words}
-
-categories = {
-    "meN- verbs": meN_words,
-    "peN- nouns": peN_words,
-    "ter- words": ter_words,
-    "simpulan bahasa": simpulan_words,
-    "others": other_words,
-    "penanda wacana": penanda_words
-}
-
-# --- Progress Log ---
+# ------------------------------
+# 🔹 CSV log setup
+# ------------------------------
 LOG_FILE = "vocab_log.csv"
+
 if os.path.exists(LOG_FILE):
     log_df = pd.read_csv(LOG_FILE)
 else:
-    log_df = pd.DataFrame({"word": list(vocab.keys()), "correct": 0, "wrong": 0})
+    log_df = pd.DataFrame(columns=["word", "correct", "wrong"])
+    log_df.to_csv(LOG_FILE, index=False)
 
-for w in vocab.keys():
-    if w not in log_df["word"].values:
-        log_df = pd.concat([log_df, pd.DataFrame([{"word": w, "correct": 0, "wrong": 0}])], ignore_index=True)
 
-# --- Helper: Weighted Sampling from One Category ---
+# ------------------------------
+# 🔹 Define categories
+# ------------------------------
+simpulan_bahasa = {
+    "buah fikiran": "idea",
+    "kaki bangku": "bad at sports",
+    "hidung tinggi": "arrogant",
+    "tangan kosong": "empty-handed",
+    "mulut manis": "flattering",
+    "naik darah": "angry",
+    "telinga nipis": "sensitive to criticism",
+    "makan angin": "go on holiday",
+    "besar hati": "grateful / proud",
+    "ambil hati": "to please someone",
+    "berat mulut": "not talkative",
+}
+
+penanda_wacana = {
+    "mula-mula": "at first",
+    "pertama": "firstly",
+    "selain itu": "besides that",
+    "tambahan pula": "moreover",
+    "kemudian": "then",
+    "selepas itu": "after that",
+    "walau bagaimanapun": "however",
+    "oleh itu": "therefore",
+    "contohnya": "for example",
+    "misalnya": "for example",
+    "akhirnya": "finally",
+    "akhir sekali": "lastly",
+    "kesimpulannya": "in conclusion",
+}
+
+men_kan_verbs = {
+    "membesarkan": "enlarge",
+    "mengajarkan": "teach",
+    "mengingatkan": "remind",
+    "menjalankan": "carry out",
+    "melarikan": "run away",
+    "memainkan": "play something",
+    "mengerjakan": "work on",
+    "mendirikan": "establish/build",
+    "menggerakkan": "move something",
+    "menghentikan": "stop something",
+    "mencantikkan": "beautify",
+    "membaikan": "to improve",
+    "mendekatkan": "bring closer",
+    "memasukan": "insert",
+    "mendudukan": "place",
+    "menaikkan": "increase",
+    "membelikan": "buy for someone",
+    "menyeronkkan": "enjoy/have fun",
+}
+
+men_i_verbs = {
+    "menaiki": "to get on board",
+    "menikmati": "to enjoy",
+    "menyayangi": "to love",
+    "mendekati": "to approach something",
+    "membaiki": "repair",
+    "mengingati": "remember",
+    "menjalani": "undergo",
+    "memasuki": "enter",
+    "menduduki": "occupy",
+}
+
+pen_an_nouns = {
+    "pemakanan": "diet",
+    "pembacaan": "reading",
+    "pengunaan": "usage",
+    "pemandangan": "view/scenery",
+    "pengelaman": "experience",
+    "penuliskan": "writing",
+    "perjalanan": "journey",
+    "pekerjaan": "occupation",
+    "persoalan": "question",
+    "pembuatan": "production",
+    "pemakaian": "to wear clothes",
+    "kepanasan": "feeling hot",
+    "kebaikan": "goodness",
+    "kesakitan": "pain",
+}
+
+categories = {
+    "simpulan bahasa": simpulan_bahasa,
+    "penanda wacana": penanda_wacana,
+    "meN-kan verbs": men_kan_verbs,
+    "men-i verbs": men_i_verbs,
+    "peN-an / ke-an nouns": pen_an_nouns,
+}
+
+
+# ------------------------------
+# 🔹 Weighted sampling helper
+# ------------------------------
 def weighted_sample(word_dict, n):
     """Select up to n items from a category, weighted by wrong answers."""
     log_filtered = log_df[log_df["word"].isin(word_dict.keys())].copy()
@@ -98,31 +125,29 @@ def weighted_sample(word_dict, n):
     indices = np.random.choice(len(vocab_items), size=n, replace=False, p=weights)
     return [vocab_items[i] for i in indices]
 
-# --- Fixed Proportion Generator ---
+
+# ------------------------------
+# 🔹 Generate quiz logic
+# ------------------------------
 def generate_quiz(n, selected_cats):
-    """
-    Generate a quiz with n questions from selected categories.
-    Distributes equally among selected categories, and fully from one if only one selected.
-    Uses adaptive weighting based on wrong counts in vocab_log.csv.
-    """
-
+    """Generate quiz with n questions distributed equally among selected categories."""
     selected_cats = [c for c in selected_cats if c in categories]
+    if not selected_cats:
+        return []
 
-    # --- Handle single category case ---
+    # Single category → take all from that
     if len(selected_cats) == 1:
-        cat_dict = categories[selected_cats[0]]
-        return weighted_sample(cat_dict, n)
+        return weighted_sample(categories[selected_cats[0]], n)
 
-    # --- Multiple categories: equal proportion ---
+    # Multi-category → equal distribution
     per_cat = max(1, n // len(selected_cats))
     quiz = []
 
     for cat in selected_cats:
         cat_dict = categories[cat]
-        cat_sample = weighted_sample(cat_dict, per_cat)
-        quiz.extend(cat_sample)
+        quiz.extend(weighted_sample(cat_dict, per_cat))
 
-    # If fewer than n due to small categories, top up randomly from selected ones
+    # Fill remainder if not enough
     if len(quiz) < n:
         remaining = n - len(quiz)
         pool = []
@@ -134,80 +159,58 @@ def generate_quiz(n, selected_cats):
     random.shuffle(quiz)
     return quiz[:n]
 
-# --- Streamlit App ---
-st.title("🗣️ Malay Vocabulary Tester")
-st.sidebar.header("Settings")
 
-mode = st.sidebar.selectbox("Test direction:", ["English → Malay", "Malay → English"])
-num_questions = st.sidebar.slider("Number of words:", 3, 50, 20)
-selected_cats = st.sidebar.multiselect("Categories to include:", list(categories.keys()), default=list(categories.keys()))
+# ------------------------------
+# 🔹 Streamlit UI
+# ------------------------------
+st.title("🗣️ Malay Vocabulary Quiz")
 
-# --- Generate or Refresh Quiz ---
-if "quiz_words" not in st.session_state:
+st.sidebar.header("Quiz Settings")
+selected_cats = st.sidebar.multiselect("Select categories", list(categories.keys()), default=["simpulan bahasa"])
+num_questions = st.sidebar.slider("Number of questions", 5, 30, 20)
+
+if "quiz_words" not in st.session_state or st.sidebar.button("Restart Quiz"):
     st.session_state.quiz_words = generate_quiz(num_questions, selected_cats)
-    st.session_state.answers = [""] * num_questions
-    st.session_state.num_questions = num_questions
-    st.session_state.last_cats = selected_cats
+    st.session_state.user_answers = [""] * len(st.session_state.quiz_words)
+    st.session_state.show_results = False
 
-if num_questions != st.session_state.num_questions or st.session_state.last_cats != selected_cats:
-    st.session_state.quiz_words = generate_quiz(num_questions, selected_cats)
-    st.session_state.answers = [""] * num_questions
-    st.session_state.num_questions = num_questions
-    st.session_state.last_cats = selected_cats
+quiz_words = st.session_state.quiz_words
 
-score = 0
-wrong_list = []
+# ------------------------------
+# 🔹 Quiz display
+# ------------------------------
+st.write("### Translate the following Malay words:")
 
-st.header("📝 Quiz")
+for i, (malay, english) in enumerate(quiz_words):
+    st.session_state.user_answers[i] = st.text_input(f"{i+1}. {malay}", st.session_state.user_answers[i])
 
-for i, (malay, english) in enumerate(st.session_state.quiz_words):
-    key = f"q{i}"
-    if mode == "Malay → English":
-        user_answer = st.text_input(f"{i+1}. Meaning of **{malay}**:", value=st.session_state.answers[i], key=key)
-        if user_answer:
-            st.session_state.answers[i] = user_answer
-            if user_answer.strip().lower() == english.lower():
-                st.success("✅ Correct!")
+if st.button("Submit Answers"):
+    correct = 0
+    for (malay, english), ans in zip(quiz_words, st.session_state.user_answers):
+        ans_clean = ans.strip().lower()
+        correct_ans = english.lower()
+
+        if ans_clean == correct_ans:
+            correct += 1
+            if malay in log_df["word"].values:
                 log_df.loc[log_df["word"] == malay, "correct"] += 1
-                score += 1
             else:
-                st.error(f"❌ Correct: **{english}**")
+                log_df.loc[len(log_df)] = [malay, 1, 0]
+        else:
+            if malay in log_df["word"].values:
                 log_df.loc[log_df["word"] == malay, "wrong"] += 1
-                wrong_list.append(malay)
-    else:
-        user_answer = st.text_input(f"{i+1}. Malay for **{english}**:", value=st.session_state.answers[i], key=key)
-        if user_answer:
-            st.session_state.answers[i] = user_answer
-            if user_answer.strip().lower() == malay.lower():
-                st.success("✅ Correct!")
-                log_df.loc[log_df["word"] == malay, "correct"] += 1
-                score += 1
             else:
-                st.error(f"❌ Correct: **{malay}**")
-                log_df.loc[log_df["word"] == malay, "wrong"] += 1
-                wrong_list.append(malay)
+                log_df.loc[len(log_df)] = [malay, 0, 1]
 
-# Save log
-log_df.to_csv(LOG_FILE, index=False)
+    log_df.to_csv(LOG_FILE, index=False)
+    st.session_state.show_results = True
+    st.session_state.score = f"{correct}/{len(quiz_words)}"
 
-st.write("---")
-st.subheader(f"✅ Score: {score}/{num_questions}")
-if wrong_list:
-    st.write("Words to review:")
-    st.write(", ".join(wrong_list))
-
-if st.button("🔁 New Quiz"):
-    st.session_state.quiz_words = generate_quiz(num_questions, selected_cats)
-    st.session_state.answers = [""] * num_questions
-    st.rerun()
-
-
-
-
-
-
-
-
-
-
-
+# ------------------------------
+# 🔹 Show results
+# ------------------------------
+if st.session_state.get("show_results", False):
+    st.success(f"Your score: {st.session_state.score}")
+    with st.expander("Show correct answers"):
+        for (malay, english), ans in zip(quiz_words, st.session_state.user_answers):
+            st.write(f"**{malay}** — your answer: *{ans}* → correct: **{english}**")
