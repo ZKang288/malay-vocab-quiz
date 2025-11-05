@@ -161,7 +161,7 @@ selected_categories = st.multiselect(
 )
 
 # Number of questions
-num_questions = st.slider("Number of questions:", 5, 50, 20)
+num_questions = st.slider("Number of questions:", 10, 200, 20)
 
 # ---------------------
 # GENERATE QUIZ FUNCTION
@@ -246,3 +246,4 @@ st.sidebar.header("Progress Tracking")
 st.sidebar.write(f"Total words in database: {sum(len(cat) for cat in categories.values())}")
 st.sidebar.write(f"Selected categories: {len(selected_categories)}")
 st.sidebar.write(f"Questions in current quiz: {len(st.session_state.quiz_words)}")
+
