@@ -79,7 +79,7 @@ meN_kan_verbs = {
     "menggerakkan": "move something",
     "menghentikan": "stop something",
     "mencantikkan": "beautify",
-    "membaikan": "to improve",
+    "membaikkan": "to improve",
     "mendekatkan": "bring closer",
     "memasukkan": "insert",
     "mendudukan": "place",
@@ -104,12 +104,13 @@ peN_nouns = {
     "pembaca": "reader", "pemfitnah": "slanderer", "pemotong": "cutter", "pencuri": "thief",
     "pendaki": "climber", "penari": "dancer", "pengguna": "user", "pengkaji": "researcher",
     "penganalisis": "analyst", "penyapu": "broom", "penyukat": "measurer", "pengecat": "painter", "pengelap": "wiper"
+    "penghantar": "delivery man", "pelukis": "artist"
 }
 
 peN_an_nouns = {
     "pemakanan": "diet",
     "pembacaan": "reading",
-    "pengunaan": "usage",
+    "penggunaan": "usage",
     "pemandangan": "view/scenery",
     "pengalaman": "experience",
     "penulisan": "writing",
@@ -281,5 +282,6 @@ st.sidebar.write(f"Total words in database: {sum(len(cat) for cat in categories.
 st.sidebar.write(f"Selected categories: {len(selected_categories)}")
 st.sidebar.write(f"Questions in current quiz: {len(st.session_state.quiz_words)}")
 st.sidebar.write(f"Test direction: {test_direction}")
+
 
 
