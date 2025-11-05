@@ -159,7 +159,7 @@ st.sidebar.header("Quiz Settings")
 # Test direction selection
 test_direction = st.sidebar.selectbox(
     "Test direction:",
-    ["Malay → English", "English → Malay"]
+    ["English → Malay", "Malay → English"]
 )
 
 # Select categories
@@ -281,3 +281,4 @@ st.sidebar.write(f"Total words in database: {sum(len(cat) for cat in categories.
 st.sidebar.write(f"Selected categories: {len(selected_categories)}")
 st.sidebar.write(f"Questions in current quiz: {len(st.session_state.quiz_words)}")
 st.sidebar.write(f"Test direction: {test_direction}")
+
