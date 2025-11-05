@@ -101,10 +101,9 @@ meN_i_verbs = {
 }
 
 peN_nouns = {
-    "pembaca": "reader", "pemfitnah": "slanderer", "pemotong": "cutter", "pencuri": "thief",
+    "pembaca": "reader", "pemfitnah": "slanderer", "pemotong": "cutter", "pencuri": "thief", "penghantar": "delivery man",
     "pendaki": "climber", "penari": "dancer", "pengguna": "user", "pengkaji": "researcher",
-    "penganalisis": "analyst", "penyapu": "broom", "penyukat": "measurer", "pengecat": "painter", "pengelap": "wiper"
-    "penghantar": "delivery man", "pelukis": "artist"
+    "penganalisis": "analyst", "penyapu": "broom", "penyukat": "measurer", "pengecat": "painter", "pengelap": "wiper", "pelukis": "artist"
 }
 
 peN_an_nouns = {
@@ -282,6 +281,7 @@ st.sidebar.write(f"Total words in database: {sum(len(cat) for cat in categories.
 st.sidebar.write(f"Selected categories: {len(selected_categories)}")
 st.sidebar.write(f"Questions in current quiz: {len(st.session_state.quiz_words)}")
 st.sidebar.write(f"Test direction: {test_direction}")
+
 
 
 
