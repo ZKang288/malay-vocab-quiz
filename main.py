@@ -69,7 +69,7 @@ meN_verbs = {
     "mengikal": "tie", "menggosok": "rub", "mengira": "to count"
 }
 
-men_kan_verbs = {
+meN_kan_verbs = {
     "membesarkan": "enlarge",
     "mengajarkan": "teach",
     "mengingatkan": "remind",
@@ -90,7 +90,7 @@ men_kan_verbs = {
     "menyeronkkan": "enjoy/have fun",
 }
 
-men_i_verbs = {
+meN_i_verbs = {
     "menaiki": "to get on board",
     "menikmati": "to enjoy",
     "menyayangi": "to love",
@@ -102,13 +102,13 @@ men_i_verbs = {
     "menduduki": "occupy",
 }
 
-pen_nouns = {
+peN_nouns = {
     "pembaca": "reader", "pemfitnah": "slanderer", "pemotong": "cutter", "pencuri": "thief",
     "pendaki": "climber", "penari": "dancer", "pengguna": "user", "pengkaji": "researcher",
     "penganalisis": "analyst", "penyapu": "broom", "penyukat": "measurer", "pengecat": "painter", "pengelap": "wiper"
 }
 
-pen_an_nouns = {
+peN_an_nouns = {
     "pemakanan": "diet",
     "pembacaan": "reading",
     "pengunaan": "usage",
@@ -141,7 +141,7 @@ categories = {
     "Penanda Wacana": penanda_wacana,
     "meN- verbs": meN_verbs,
     "meN-kan verbs": meN_kan_verbs,
-    "men-i verbs": men_i_verbs,
+    "meN-i verbs": men_i_verbs,
     "peN-/ke-an nouns": pen_kean_nouns,
     "peN- nouns": pen_nouns,
     "ter- words": ter_words,
@@ -210,4 +210,5 @@ for i, (malay, english) in enumerate(st.session_state.quiz_words):
 # ---------------------
 if st.button("✅ Submit"):
     st.success(f"You scored {score} out of {len(st.session_state.quiz_words)}!")
+
 
