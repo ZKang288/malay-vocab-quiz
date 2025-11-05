@@ -85,7 +85,7 @@ meN_kan_verbs = {
     "mendudukan": "place",
     "menaikkan": "increase",
     "membelikan": "buy for someone",
-    "menyeronokkan": "enjoy/have fun",  # Fixed typo from "menyeronkkan"
+    "menyeronokkan": "enjoy/have fun",
 }
 
 meN_i_verbs = {
@@ -111,8 +111,8 @@ peN_an_nouns = {
     "pembacaan": "reading",
     "pengunaan": "usage",
     "pemandangan": "view/scenery",
-    "pengalaman": "experience",  # Fixed typo from "pengelaman"
-    "penulisan": "writing",  # Fixed typo from "penuliskan"
+    "pengalaman": "experience",
+    "penulisan": "writing",
     "perjalanan": "journey",
     "pekerjaan": "occupation",
     "persoalan": "question",
@@ -140,9 +140,9 @@ categories = {
     "Penanda Wacana": penanda_wacana,
     "meN- verbs": meN_verbs,
     "meN-kan verbs": meN_kan_verbs,
-    "meN-i verbs": meN_i_verbs,  # Fixed variable name
+    "meN-i verbs": meN_i_verbs,
     "peN- nouns": peN_nouns,
-    "peN-an/ke-an nouns": peN_an_nouns,  # Fixed variable name
+    "peN-an/ke-an nouns": peN_an_nouns,
     "ter- words": ter_words,
     "Others": others
 }
@@ -153,15 +153,24 @@ categories = {
 st.title("🗣️ Malay Vocabulary Quiz")
 st.write("Test your Malay vocabulary knowledge")
 
+# Quiz configuration in sidebar
+st.sidebar.header("Quiz Settings")
+
+# Test direction selection
+test_direction = st.sidebar.selectbox(
+    "Test direction:",
+    ["Malay → English", "English → Malay"]
+)
+
 # Select categories
-selected_categories = st.multiselect(
+selected_categories = st.sidebar.multiselect(
     "Select categories to be tested:", 
     list(categories.keys()), 
     default=list(categories.keys())
 )
 
 # Number of questions
-num_questions = st.slider("Number of questions:", 10, 200, 20)
+num_questions = st.sidebar.slider("Number of questions:", 10, 200, 20)
 
 # ---------------------
 # GENERATE QUIZ FUNCTION
@@ -193,11 +202,15 @@ if "quiz_words" not in st.session_state:
     st.session_state.quiz_words = generate_quiz(num_questions)
 if "answers" not in st.session_state:
     st.session_state.answers = [""] * len(st.session_state.quiz_words)
+if "test_direction" not in st.session_state:
+    st.session_state.test_direction = test_direction
 
-# Restart Quiz
-if st.button("🔁 Restart Quiz"):
+# Restart Quiz if direction changes or manually
+if (test_direction != st.session_state.test_direction or 
+    st.sidebar.button("🔁 Restart Quiz")):
     st.session_state.quiz_words = generate_quiz(num_questions)
     st.session_state.answers = [""] * len(st.session_state.quiz_words)
+    st.session_state.test_direction = test_direction
     st.rerun()
 
 # ---------------------
@@ -208,22 +221,40 @@ score = 0
 wrong_answers = []
 
 for i, (malay, english) in enumerate(st.session_state.quiz_words):
-    # Use a unique key for each text input
-    user_answer = st.text_input(
-        f"{i+1}. What is the English meaning of **{malay}**?", 
-        value=st.session_state.answers[i],
-        key=f"q_{i}"  # Unique key for each question
-    )
-    st.session_state.answers[i] = user_answer
+    if test_direction == "Malay → English":
+        # Malay to English direction
+        user_answer = st.text_input(
+            f"{i+1}. What is the English meaning of **{malay}**?", 
+            value=st.session_state.answers[i],
+            key=f"q_{i}"
+        )
+        st.session_state.answers[i] = user_answer
+        
+        # Check answer if user has provided one
+        if user_answer.strip():
+            if user_answer.strip().lower() == english.lower():
+                st.success("✅ Correct!")
+                score += 1
+            else:
+                st.error(f"❌ Wrong! The correct answer is: **{english}**")
+                wrong_answers.append((malay, english, user_answer, "Malay → English"))
     
-    # Check answer if user has provided one
-    if user_answer.strip():
-        if user_answer.strip().lower() == english.lower():
-            st.success("✅ Correct!")
-            score += 1
-        else:
-            st.error(f"❌ Wrong! The correct answer is: **{english}**")
-            wrong_answers.append((malay, english, user_answer))
+    else:  # English → Malay direction
+        user_answer = st.text_input(
+            f"{i+1}. What is the Malay word for **{english}**?", 
+            value=st.session_state.answers[i],
+            key=f"q_{i}"
+        )
+        st.session_state.answers[i] = user_answer
+        
+        # Check answer if user has provided one
+        if user_answer.strip():
+            if user_answer.strip().lower() == malay.lower():
+                st.success("✅ Correct!")
+                score += 1
+            else:
+                st.error(f"❌ Wrong! The correct answer is: **{malay}**")
+                wrong_answers.append((malay, english, user_answer, "English → Malay"))
 
 # ---------------------
 # RESULTS
@@ -236,14 +267,17 @@ if st.button("✅ Submit Quiz"):
     
     if wrong_answers:
         st.subheader("📝 Words to review:")
-        for malay, english, user_ans in wrong_answers:
-            st.write(f"- **{malay}**: Your answer: '{user_ans}' | Correct: **{english}**")
+        for malay, english, user_ans, direction in wrong_answers:
+            if direction == "Malay → English":
+                st.write(f"- **{malay}**: Your answer: '{user_ans}' | Correct: **{english}**")
+            else:
+                st.write(f"- **{english}**: Your answer: '{user_ans}' | Correct: **{malay}**")
 
 # ---------------------
-# PROGRESS TRACKING (Optional enhancement)
+# PROGRESS TRACKING
 # ---------------------
 st.sidebar.header("Progress Tracking")
 st.sidebar.write(f"Total words in database: {sum(len(cat) for cat in categories.values())}")
 st.sidebar.write(f"Selected categories: {len(selected_categories)}")
 st.sidebar.write(f"Questions in current quiz: {len(st.session_state.quiz_words)}")
-
+st.sidebar.write(f"Test direction: {test_direction}")
