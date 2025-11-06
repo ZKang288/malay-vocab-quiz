@@ -59,12 +59,12 @@ penanda_wacana = {
 }
 
 meN_verbs = {
-    "melihat": "see", "memasak": "cook", "menyanyi": "sing", "merasa": "feel",
-    "mewarna": "color", "meyakinkan": "convince", "membeli": "buy", "menfoto": "photograph",
+    "melihat": "see", "memasak": "to cook", "menyanyi": "sing", "merasa": "feel",
+    "mewarna": "to color", "meyakinkan": "convince", "membeli": "buy", "menfoto": "to photograph",
     "memvakum": "vacuum", "memohon": "apply", "mencuci": "wash", "mendapat": "get",
-    "menjawab": "answer", "menulis": "write", "menziarah": "visit", "menyapu": "sweep",
+    "menjawab": "answer", "menulis": "write", "menziarah": "to visit", "menyapu": "sweep",
     "menyepak": "kick", "mengecat": "paint", "mengelap": "wipe", "mengambil": "take",
-    "mengikal": "tie", "menggosok": "rub", "mengira": "to count"
+    "mengikal": "to tie", "menggosok": "to rub", "mengira": "to count"
 }
 
 meN_kan_verbs = {
@@ -117,7 +117,7 @@ peN_an_nouns = {
     "pekerjaan": "occupation",
     "persoalan": "question",
     "pembuatan": "production",
-    "pemakaian": "to wear clothes",
+    "pemakaian": "the act of wearing clothes",
     "kepanasan": "feeling hot",
     "kebaikan": "goodness",
     "kesakitan": "pain",
@@ -281,6 +281,7 @@ st.sidebar.write(f"Total words in database: {sum(len(cat) for cat in categories.
 st.sidebar.write(f"Selected categories: {len(selected_categories)}")
 st.sidebar.write(f"Questions in current quiz: {len(st.session_state.quiz_words)}")
 st.sidebar.write(f"Test direction: {test_direction}")
+
 
 
 
