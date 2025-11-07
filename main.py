@@ -60,7 +60,7 @@ penanda_wacana = {
 
 meN_verbs = {
     "melihat": "see", "memasak": "to cook", "menyanyi": "sing", "merasa": "feel",
-    "mewarna": "to color", "meyakinkan": "convince", "membeli": "buy", "menfoto": "to photograph",
+    "mewarna": "to color", "meyakinkan": "convince", "membeli": "buy", "memfoto": "to photograph",
     "memvakum": "vacuum", "memohon": "apply", "mencuci": "wash", "mendapat": "get",
     "menjawab": "answer", "menulis": "write", "menziarah": "to visit", "menyapu": "sweep",
     "menyepak": "kick", "mengecat": "paint", "mengelap": "wipe", "mengambil": "take",
@@ -281,6 +281,7 @@ st.sidebar.write(f"Total words in database: {sum(len(cat) for cat in categories.
 st.sidebar.write(f"Selected categories: {len(selected_categories)}")
 st.sidebar.write(f"Questions in current quiz: {len(st.session_state.quiz_words)}")
 st.sidebar.write(f"Test direction: {test_direction}")
+
 
 
 
